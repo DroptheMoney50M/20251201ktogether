@@ -87,6 +87,49 @@ class _WordCardPageState extends State<WordCardPage> {
     }
   }
 
+  Widget _pronunciationRow(List<dynamic> word) {
+    // 4번째 열(발음)이 있으면 예쁘게 보여줌
+    if (word.length > 3 && word[3].toString().trim().isNotEmpty) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 10, bottom: 8),
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFFFAF3E3),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.brown.withOpacity(0.08),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.record_voice_over,
+                  color: Color(0xFFff9800), size: 22),
+              const SizedBox(width: 8),
+              Text(
+                word[3].toString(),
+                style: const TextStyle(
+                  fontSize: 19,
+                  color: Color(0xFFff9800),
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1.1,
+                  fontFamily: 'Arial',
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      return const SizedBox.shrink();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     print(
@@ -100,7 +143,7 @@ class _WordCardPageState extends State<WordCardPage> {
     // 첫 행은 헤더이므로, 실제 데이터는 words[current+1]
     final word = words[current + 1];
     print('build: 현재 단어 = \\${word}');
-    // word: [id, korean_word, turkish_meaning, audio_url]
+    // word: [id, korean_word, turkish_meaning, pronunciation]
     return Scaffold(
       backgroundColor: const Color(0xFFF0FFF4),
       body: Center(
@@ -130,6 +173,8 @@ class _WordCardPageState extends State<WordCardPage> {
                       letterSpacing: 2,
                     ),
                   ),
+                  // 발음(로마자) 표시
+                  _pronunciationRow(word),
                   const SizedBox(height: 12),
                   // 터키어 뜻
                   Container(
