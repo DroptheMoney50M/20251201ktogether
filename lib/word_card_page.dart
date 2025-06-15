@@ -12,7 +12,10 @@ class WordCardPage extends StatefulWidget {
 }
 
 class _WordCardPageState extends State<WordCardPage> {
+  List<List<dynamic>> allWords = [];
   List<List<dynamic>> words = [];
+  List<String> categories = ['모두'];
+  String selectedCategory = '모두';
   int current = 0;
   final FlutterTts flutterTts = FlutterTts();
   bool loading = true;
@@ -51,15 +54,27 @@ class _WordCardPageState extends State<WordCardPage> {
         final header = dataTable.first;
         final data = List<List<dynamic>>.from(dataTable.skip(1));
         data.shuffle(Random());
+        // 카테고리 추출
+        final cats = data
+            .map((row) => row.length > 4 ? row[4].toString() : '')
+            .where((c) => c.isNotEmpty)
+            .toSet()
+            .toList();
+        cats.sort();
         if (!mounted) return;
         setState(() {
+          allWords = [header, ...data];
+          categories = ['모두', ...cats];
+          selectedCategory = '모두';
           words = [header, ...data];
           loading = false;
+          current = 0;
         });
         print('fetchWords: setState 후 words.length = \\${words.length} (셔플됨)');
       } else {
         if (!mounted) return;
         setState(() {
+          allWords = dataTable;
           words = dataTable;
           loading = false;
         });
@@ -67,6 +82,27 @@ class _WordCardPageState extends State<WordCardPage> {
       }
     } else {
       print('fetchWords: 에러 발생!');
+    }
+  }
+
+  void filterByCategory(String category) {
+    if (category == '모두') {
+      setState(() {
+        words = List<List<dynamic>>.from(allWords);
+        current = 0;
+        selectedCategory = category;
+      });
+    } else {
+      final header = allWords.first;
+      final filtered = allWords
+          .skip(1)
+          .where((row) => row.length > 4 && row[4] == category)
+          .toList();
+      setState(() {
+        words = [header, ...filtered];
+        current = 0;
+        selectedCategory = category;
+      });
     }
   }
 
@@ -149,98 +185,153 @@ class _WordCardPageState extends State<WordCardPage> {
       body: Center(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 350),
-          child: Card(
-            elevation: 8,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(32),
-            ),
-            color: Colors.white,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 28),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // 귀여운 아이콘
-                  const Icon(Icons.eco, size: 48, color: Color(0xFF43A047)),
-                  const SizedBox(height: 18),
-                  // 한국어 단어
-                  Text(
-                    word[1].toString(),
-                    style: const TextStyle(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2E7D32),
-                      letterSpacing: 2,
-                    ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 카테고리 선택: 좌우 스크롤 토글 버튼
+              Padding(
+                padding: const EdgeInsets.only(top: 24, bottom: 8),
+                child: SizedBox(
+                  height: 40,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: categories.length,
+                    separatorBuilder: (context, idx) =>
+                        const SizedBox(width: 8),
+                    itemBuilder: (context, idx) {
+                      final cat = categories[idx];
+                      final selected = selectedCategory == cat;
+                      return GestureDetector(
+                        onTap: () => filterByCategory(cat),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 18, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: selected
+                                ? const Color(0xFF43A047)
+                                : const Color(0xFFE8F5E9),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: selected
+                                  ? const Color(0xFF388E3C)
+                                  : const Color(0xFFB2DFDB),
+                              width: selected ? 2 : 1,
+                            ),
+                          ),
+                          child: Text(
+                            cat,
+                            style: TextStyle(
+                              color: selected
+                                  ? Colors.white
+                                  : const Color(0xFF388E3C),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                  // 발음(로마자) 표시
-                  _pronunciationRow(word),
-                  const SizedBox(height: 12),
-                  // 터키어 뜻
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 18),
-                    decoration: BoxDecoration(
-                      color: Color(0xFFE8F5E9),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Text(
-                      word[2].toString(),
-                      style: const TextStyle(
-                        fontSize: 22,
-                        color: Color(0xFF388E3C),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  // 발음 듣기 버튼
-                  ElevatedButton.icon(
-                    onPressed: _speak,
-                    icon: const Icon(Icons.volume_up_rounded,
-                        color: Color(0xFF43A047)),
-                    label: const Text('Dinle', style: TextStyle(fontSize: 18)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFFC8E6C9),
-                      foregroundColor: Color(0xFF2E7D32),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
-                      elevation: 2,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  // 다음 버튼
-                  OutlinedButton(
-                    onPressed: _nextWord,
-                    style: OutlinedButton.styleFrom(
-                      side:
-                          const BorderSide(color: Color(0xFF43A047), width: 2),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 32, vertical: 12),
-                    ),
-                    child: const Text(
-                      'Sonraki',
-                      style: TextStyle(
-                          fontSize: 18,
-                          color: Color(0xFF43A047),
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  // 인덱스 표시
-                  Text(
-                    '${(current + 1).toString()} / ${words.length - 1}',
-                    style: TextStyle(fontSize: 14, color: Color(0xFF81C784)),
-                  ),
-                ],
+                ),
               ),
-            ),
+              Card(
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(32),
+                ),
+                color: Colors.white,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 40, horizontal: 28),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // 귀여운 아이콘
+                      const Icon(Icons.eco, size: 48, color: Color(0xFF43A047)),
+                      const SizedBox(height: 18),
+                      // 한국어 단어
+                      Text(
+                        word[1].toString(),
+                        style: const TextStyle(
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2E7D32),
+                          letterSpacing: 2,
+                        ),
+                      ),
+                      // 발음(로마자) 표시
+                      _pronunciationRow(word),
+                      const SizedBox(height: 12),
+                      // 터키어 뜻
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 18),
+                        decoration: BoxDecoration(
+                          color: Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          word[2].toString(),
+                          style: const TextStyle(
+                            fontSize: 22,
+                            color: Color(0xFF388E3C),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      // 발음 듣기 버튼
+                      ElevatedButton.icon(
+                        onPressed: _speak,
+                        icon: const Icon(Icons.volume_up_rounded,
+                            color: Color(0xFF43A047)),
+                        label:
+                            const Text('Dinle', style: TextStyle(fontSize: 18)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(0xFFC8E6C9),
+                          foregroundColor: Color(0xFF2E7D32),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
+                          elevation: 2,
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      // 다음 버튼
+                      OutlinedButton(
+                        onPressed: _nextWord,
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(
+                              color: Color(0xFF43A047), width: 2),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 32, vertical: 12),
+                        ),
+                        child: const Text(
+                          'Sonraki',
+                          style: TextStyle(
+                              fontSize: 18,
+                              color: Color(0xFF43A047),
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      // 인덱스 표시
+                      Text(
+                        '${(current + 1).toString()} / ${words.length - 1}',
+                        style:
+                            TextStyle(fontSize: 14, color: Color(0xFF81C784)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
