@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:upgrader/upgrader.dart'; // 업그레이더 패키지 import
 
 import 'word_card_page.dart';
 import 'school_info_page.dart';
@@ -18,7 +19,13 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MainNavigation(),
+      // 업그레이더 적용: home을 UpgradeAlert로 감쌈
+      home: UpgradeAlert(
+        upgrader: Upgrader(
+          messages: UpgraderMessages(code: 'tr'), // 터키어 메시지
+        ),
+        child: const MainNavigation(),
+      ),
     );
   }
 }
