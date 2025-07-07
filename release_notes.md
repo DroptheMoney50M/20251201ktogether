@@ -1,5 +1,23 @@
 # Sürüm Notları (tr-TR)
 
+## Sürüm 1.0.2+7
+
+### Yeni Özellikler
+- Favori kelimeler listesi geliştirilmiştir
+- Örnek cümle arama özelliği eklenmiştir
+
+### İyileştirmeler
+- Kelime kartları arayüzü iyileştirilmiştir
+- Kategori seçimi daha sezgisel hale getirilmiştir
+- Uygulama başlatma hızı artırılmıştır
+
+### Hata Düzeltmeleri
+- Bazı Android cihazlarda görülen hata mesajları düzeltilmiştir
+- Metin ölçeklendirme sorunları giderilmiştir
+- Kelime listesi yükleme sorunları çözülmüştür
+
+---
+
 ## Sürüm 1.0.1+6
 
 ### Yeni Özellikler

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:upgrader/upgrader.dart'; // 업그레이더 패키지 import
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'word_card_page.dart';
-import 'school_info_page.dart';
-import 'FavoritedWordsPage.dart';
+import './word_card_page.dart';
+import './school_info_page.dart';
+import './FavoritedWordsPage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -62,9 +62,8 @@ class _MainNavigationState extends State<MainNavigation> {
 
   void _saveFavoritedWords() async {
     final prefs = await SharedPreferences.getInstance();
-    final savedWords = favoritedWords
-        .map((word) => Uri(queryParameters: word).query)
-        .toList();
+    final savedWords =
+        favoritedWords.map((word) => Uri(queryParameters: word).query).toList();
     await prefs.setStringList('favoritedWords', savedWords);
   }
 
@@ -77,12 +76,14 @@ class _MainNavigationState extends State<MainNavigation> {
   @override
   Widget build(BuildContext context) {
     final pages = <Widget>[
-      WordCardPage(onFavorite: (word) {
-        setState(() {
-          favoritedWords.add(word);
-          _saveFavoritedWords();
-        });
-      }),
+      WordCardPage(
+        onFavorite: (word) {
+          setState(() {
+            favoritedWords.add(word);
+            _saveFavoritedWords();
+          });
+        },
+      ),
       FavoritedWordsPage(favoritedWords: favoritedWords),
       SchoolInfoPage(),
     ];
@@ -96,9 +97,8 @@ class _MainNavigationState extends State<MainNavigation> {
             label: 'Kelime', // 단어 학습
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite), 
+            icon: Icon(Icons.favorite),
             label: 'Favori Kelimeler', // 즐겨찾기 단어
-
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.school),
