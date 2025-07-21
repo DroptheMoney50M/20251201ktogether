@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import './word_card_page.dart';
 import './school_info_page.dart';
 import './FavoritedWordsPage.dart';
+import './lecture_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -83,9 +84,19 @@ class _MainNavigationState extends State<MainNavigation> {
             _saveFavoritedWords();
           });
         },
+        onRemoveFavorite: (word) {
+          setState(() {
+            favoritedWords.removeWhere((fav) =>
+                fav['korean'] == word['korean'] &&
+                fav['turkish'] == word['turkish']);
+            _saveFavoritedWords();
+          });
+        },
+        favoritedWords: favoritedWords,
       ),
+      const LecturePage(),
       FavoritedWordsPage(favoritedWords: favoritedWords),
-      SchoolInfoPage(),
+      const SchoolInfoPage(),
     ];
 
     return Scaffold(
@@ -97,12 +108,16 @@ class _MainNavigationState extends State<MainNavigation> {
             label: 'Kelime', // 단어 학습
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.play_lesson),
+            label: 'Dersler', // 강의
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.favorite),
-            label: 'Favori Kelimeler', // 즐겨찾기 단어
+            label: 'Favoriler', // 즐겨찾기 단어
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.school),
-            label: 'Yurtdışı Bilgi', // 유학 정보
+            label: 'Yurtdışı', // 유학 정보
           ),
         ],
         currentIndex: _selectedIndex,

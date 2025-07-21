@@ -6,8 +6,15 @@ import 'package:csv/csv.dart';
 
 class WordCardPage extends StatefulWidget {
   final Function(Map<String, String>) onFavorite;
+  final Function(Map<String, String>) onRemoveFavorite;
+  final List<Map<String, String>> favoritedWords;
 
-  const WordCardPage({super.key, required this.onFavorite});
+  const WordCardPage({
+    super.key,
+    required this.onFavorite,
+    required this.onRemoveFavorite,
+    required this.favoritedWords,
+  });
 
   @override
   State<WordCardPage> createState() => _WordCardPageState();
@@ -110,11 +117,38 @@ class _WordCardPageState extends State<WordCardPage> {
   }
 
   void _nextWord() {
-    print('_nextWord: 다음 단어로 이동 (current: \\${current})');
+    print('_nextWord: 다음 단어로 이동 (current: ${current})');
     setState(() {
       current = (current + 1) % (words.length - 1);
     });
-    print('_nextWord: 이동 후 current = \\${current}');
+    print('_nextWord: 이동 후 current = ${current}');
+  }
+
+  // 즐겨찾기 상태 확인
+  bool _isFavorited(Map<String, String> word) {
+    return widget.favoritedWords.any((fav) =>
+        fav['korean'] == word['korean'] && fav['turkish'] == word['turkish']);
+  }
+
+  // 즐겨찾기 토글
+  void _toggleFavorite(Map<String, String> word) {
+    if (_isFavorited(word)) {
+      widget.onRemoveFavorite(word);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Kelime favorilerden çıkarıldı!'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    } else {
+      widget.onFavorite(word);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Kelime favorilere eklendi!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    }
   }
 
   void _speak() async {
@@ -243,566 +277,583 @@ class _WordCardPageState extends State<WordCardPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF0FFF4),
       body: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 350),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // 좌우 스크롤 카테고리 위에 화살표 추가
-              Padding(
-                padding: const EdgeInsets.only(top: 16, bottom: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Icon(Icons.arrow_left, color: Color(0xFF388E3C), size: 24),
-                    Text(
-                      'Kategori (Sağa sola kaydırabilirsiniz)',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF388E3C),
+          child: Container(
+        constraints: const BoxConstraints(maxWidth: 350),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 좌우 스크롤 카테고리 위에 화살표 추가
+            Padding(
+              padding: const EdgeInsets.only(top: 16, bottom: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: const [
+                  Icon(Icons.arrow_left, color: Color(0xFF388E3C), size: 24),
+                  Text(
+                    'Kategori (Sağa sola kaydırabilirsiniz)',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF388E3C),
+                    ),
+                  ),
+                  Icon(Icons.arrow_right, color: Color(0xFF388E3C), size: 24),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            SizedBox(
+              height: 40,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: categories.length,
+                separatorBuilder: (context, idx) => const SizedBox(width: 8),
+                itemBuilder: (context, idx) {
+                  final cat = categories[idx];
+                  final selected = selectedCategory == cat;
+                  // 카테고리별 아이콘 매핑
+                  IconData? icon;
+                  switch (cat) {
+                    case 'Tümü':
+                      icon = Icons.all_inclusive;
+                      break;
+                    case 'Eğitim':
+                      icon = Icons.school;
+                      break;
+                    case 'Nesne':
+                      icon = Icons.category;
+                      break;
+                    case 'Giyim':
+                      icon = Icons.checkroom;
+                      break;
+                    case 'Yiyecek':
+                      icon = Icons.restaurant;
+                      break;
+                    case 'Meyve':
+                      icon = Icons.apple;
+                      break;
+                    case 'Mekan':
+                      icon = Icons.location_city;
+                      break;
+                    case 'Mobilya':
+                      icon = Icons.chair;
+                      break;
+                    case 'Elektronik':
+                      icon = Icons.devices_other;
+                      break;
+                    case 'Aile':
+                      icon = Icons.family_restroom;
+                      break;
+                    case 'İnsan':
+                      icon = Icons.person;
+                      break;
+                    case 'Duygu':
+                      icon = Icons.emoji_emotions;
+                      break;
+                    case 'Sanat':
+                      icon = Icons.palette;
+                      break;
+                    case 'Seyahat':
+                      icon = Icons.flight_takeoff;
+                      break;
+                    case 'Ulaşım':
+                      icon = Icons.directions_bus;
+                      break;
+                    case 'Alışveriş':
+                      icon = Icons.shopping_cart;
+                      break;
+                    case 'Kurum':
+                      icon = Icons.account_balance;
+                      break;
+                    case 'Ekonomi':
+                      icon = Icons.attach_money;
+                      break;
+                    case 'İletişim':
+                      icon = Icons.phone;
+                      break;
+                    case 'Özel Gün':
+                      icon = Icons.cake;
+                      break;
+                    case 'Zaman':
+                      icon = Icons.access_time;
+                      break;
+                    case 'Diğer':
+                      icon = Icons.more_horiz;
+                      break;
+                    case 'Doğa':
+                      icon = Icons.park;
+                      break;
+                    case 'Hayvan':
+                      icon = Icons.pets;
+                      break;
+                    case 'Yaşam':
+                      icon = Icons.self_improvement;
+                      break;
+                    case 'Kırtasiye':
+                      icon = Icons.edit;
+                      break;
+                    case 'Sıfat':
+                      icon = Icons.text_fields;
+                      break;
+                    case 'Renk':
+                      icon = Icons.color_lens;
+                      break;
+                    case 'Hava Durumu':
+                      icon = Icons.wb_sunny;
+                      break;
+                    case 'Mevsim':
+                      icon = Icons.thermostat;
+                      break;
+                    case 'Yer Adı':
+                      icon = Icons.place;
+                      break;
+                    case 'Uzay':
+                      icon = Icons.public;
+                      break;
+                    case 'Spor':
+                      icon = Icons.sports_soccer;
+                      break;
+                    case 'Günlük Yaşam':
+                      icon = Icons.home;
+                      break;
+                    case 'Geometrik Şekil':
+                      icon = Icons.crop_square;
+                      break;
+                    case 'Vücut':
+                      icon = Icons.accessibility_new;
+                      break;
+                    case 'Mutfak':
+                      icon = Icons.kitchen;
+                      break;
+                    case 'Akademik':
+                      icon = Icons.menu_book;
+                      break;
+                    case 'Gün':
+                      icon = Icons.today;
+                      break;
+                    case 'Zarf':
+                      icon = Icons.swap_horiz;
+                      break;
+                    case 'Bağlaç':
+                      icon = Icons.link;
+                      break;
+                    case 'Sağlık':
+                      icon = Icons.local_hospital;
+                      break;
+                    case 'Ev İşi':
+                      icon = Icons.cleaning_services;
+                      break;
+                    case 'Mağaza':
+                      icon = Icons.store;
+                      break;
+                    case 'Malzeme':
+                      icon = Icons.widgets;
+                      break;
+                    case 'ev':
+                      icon = Icons.house;
+                      break;
+                    case 'Hizmet':
+                      icon = Icons.room_service;
+                      break;
+                    case 'IT':
+                      icon = Icons.computer;
+                      break;
+                    case 'Ülke':
+                      icon = Icons.flag;
+                      break;
+                    case 'moda':
+                      icon = Icons.style;
+                      break;
+                    case 'Okul':
+                      icon = Icons.apartment;
+                      break;
+                    case 'Meslek':
+                      icon = Icons.work;
+                      break;
+                    case 'Öğrenci':
+                      icon = Icons.school_outlined;
+                      break;
+                    case 'Eylem':
+                      icon = Icons.directions_run;
+                      break;
+                    default:
+                      icon = Icons.label_outline;
+                  }
+                  return GestureDetector(
+                    onTap: () => filterByCategory(cat),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? const Color(0xFF43A047)
+                            : const Color(0xFFE8F5E9),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: selected
+                              ? const Color(0xFF388E3C)
+                              : const Color(0xFFB2DFDB),
+                          width: selected ? 2 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(icon,
+                              size: 20,
+                              color: selected
+                                  ? Colors.white
+                                  : const Color(0xFF388E3C)),
+                          const SizedBox(width: 6),
+                          Text(
+                            cat,
+                            style: TextStyle(
+                              color: selected
+                                  ? Colors.white
+                                  : const Color(0xFF388E3C),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          )
+                        ],
                       ),
                     ),
-                    Icon(Icons.arrow_right, color: Color(0xFF388E3C), size: 24),
-                  ],
-                ),
+                  );
+                },
               ),
-              SizedBox(
-                height: 20,
+            ),
+            const SizedBox(height: 16),
+            Card(
+              elevation: 8,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(32),
               ),
-              SizedBox(
-                height: 40,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: categories.length,
-                  separatorBuilder: (context, idx) => const SizedBox(width: 8),
-                  itemBuilder: (context, idx) {
-                    final cat = categories[idx];
-                    final selected = selectedCategory == cat;
-                    // 카테고리별 아이콘 매핑
-                    IconData? icon;
-                    switch (cat) {
-                      case 'Tümü':
-                        icon = Icons.all_inclusive;
-                        break;
-                      case 'Eğitim':
-                        icon = Icons.school;
-                        break;
-                      case 'Nesne':
-                        icon = Icons.category;
-                        break;
-                      case 'Giyim':
-                        icon = Icons.checkroom;
-                        break;
-                      case 'Yiyecek':
-                        icon = Icons.restaurant;
-                        break;
-                      case 'Meyve':
-                        icon = Icons.apple;
-                        break;
-                      case 'Mekan':
-                        icon = Icons.location_city;
-                        break;
-                      case 'Mobilya':
-                        icon = Icons.chair;
-                        break;
-                      case 'Elektronik':
-                        icon = Icons.devices_other;
-                        break;
-                      case 'Aile':
-                        icon = Icons.family_restroom;
-                        break;
-                      case 'İnsan':
-                        icon = Icons.person;
-                        break;
-                      case 'Duygu':
-                        icon = Icons.emoji_emotions;
-                        break;
-                      case 'Sanat':
-                        icon = Icons.palette;
-                        break;
-                      case 'Seyahat':
-                        icon = Icons.flight_takeoff;
-                        break;
-                      case 'Ulaşım':
-                        icon = Icons.directions_bus;
-                        break;
-                      case 'Alışveriş':
-                        icon = Icons.shopping_cart;
-                        break;
-                      case 'Kurum':
-                        icon = Icons.account_balance;
-                        break;
-                      case 'Ekonomi':
-                        icon = Icons.attach_money;
-                        break;
-                      case 'İletişim':
-                        icon = Icons.phone;
-                        break;
-                      case 'Özel Gün':
-                        icon = Icons.cake;
-                        break;
-                      case 'Zaman':
-                        icon = Icons.access_time;
-                        break;
-                      case 'Diğer':
-                        icon = Icons.more_horiz;
-                        break;
-                      case 'Doğa':
-                        icon = Icons.park;
-                        break;
-                      case 'Hayvan':
-                        icon = Icons.pets;
-                        break;
-                      case 'Yaşam':
-                        icon = Icons.self_improvement;
-                        break;
-                      case 'Kırtasiye':
-                        icon = Icons.edit;
-                        break;
-                      case 'Sıfat':
-                        icon = Icons.text_fields;
-                        break;
-                      case 'Renk':
-                        icon = Icons.color_lens;
-                        break;
-                      case 'Hava Durumu':
-                        icon = Icons.wb_sunny;
-                        break;
-                      case 'Mevsim':
-                        icon = Icons.thermostat;
-                        break;
-                      case 'Yer Adı':
-                        icon = Icons.place;
-                        break;
-                      case 'Uzay':
-                        icon = Icons.public;
-                        break;
-                      case 'Spor':
-                        icon = Icons.sports_soccer;
-                        break;
-                      case 'Günlük Yaşam':
-                        icon = Icons.home;
-                        break;
-                      case 'Geometrik Şekil':
-                        icon = Icons.crop_square;
-                        break;
-                      case 'Vücut':
-                        icon = Icons.accessibility_new;
-                        break;
-                      case 'Mutfak':
-                        icon = Icons.kitchen;
-                        break;
-                      case 'Akademik':
-                        icon = Icons.menu_book;
-                        break;
-                      case 'Gün':
-                        icon = Icons.today;
-                        break;
-                      case 'Zarf':
-                        icon = Icons.swap_horiz;
-                        break;
-                      case 'Bağlaç':
-                        icon = Icons.link;
-                        break;
-                      case 'Sağlık':
-                        icon = Icons.local_hospital;
-                        break;
-                      case 'Ev İşi':
-                        icon = Icons.cleaning_services;
-                        break;
-                      case 'Mağaza':
-                        icon = Icons.store;
-                        break;
-                      case 'Malzeme':
-                        icon = Icons.widgets;
-                        break;
-                      case 'ev':
-                        icon = Icons.house;
-                        break;
-                      case 'Hizmet':
-                        icon = Icons.room_service;
-                        break;
-                      case 'IT':
-                        icon = Icons.computer;
-                        break;
-                      case 'Ülke':
-                        icon = Icons.flag;
-                        break;
-                      case 'moda':
-                        icon = Icons.style;
-                        break;
-                      case 'Okul':
-                        icon = Icons.apartment;
-                        break;
-                      case 'Meslek':
-                        icon = Icons.work;
-                        break;
-                      case 'Öğrenci':
-                        icon = Icons.school_outlined;
-                        break;
-                      case 'Eylem':
-                        icon = Icons.directions_run;
-                        break;
-                      default:
-                        icon = Icons.label_outline;
-                    }
-                    return GestureDetector(
-                      onTap: () => filterByCategory(cat),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 180),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 18, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: selected
-                              ? const Color(0xFF43A047)
-                              : const Color(0xFFE8F5E9),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: selected
-                                ? const Color(0xFF388E3C)
-                                : const Color(0xFFB2DFDB),
-                            width: selected ? 2 : 1,
+              color: Colors.white,
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 40, horizontal: 28),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // 카테고리별 대표 아이콘
+                        Builder(
+                          builder: (context) {
+                            // 현재 단어의 카테고리 추출
+                            String? category;
+                            if (word.length > 4) {
+                              category = word[4]?.toString();
+                            }
+                            IconData icon;
+                            Color iconColor = const Color(0xFF43A047);
+                            switch (category) {
+                              case 'Tümü':
+                                icon = Icons.all_inclusive;
+                                break;
+                              case 'Eğitim':
+                                icon = Icons.school;
+                                break;
+                              case 'Nesne':
+                                icon = Icons.category;
+                                break;
+                              case 'Giyim':
+                                icon = Icons.checkroom;
+                                break;
+                              case 'Yiyecek':
+                                icon = Icons.restaurant;
+                                break;
+                              case 'Meyve':
+                                icon = Icons.apple;
+                                break;
+                              case 'Mekan':
+                                icon = Icons.location_city;
+                                break;
+                              case 'Mobilya':
+                                icon = Icons.chair;
+                                break;
+                              case 'Elektronik':
+                                icon = Icons.devices_other;
+                                break;
+                              case 'Aile':
+                                icon = Icons.family_restroom;
+                                break;
+                              case 'İnsan':
+                                icon = Icons.person;
+                                break;
+                              case 'Duygu':
+                                icon = Icons.emoji_emotions;
+                                break;
+                              case 'Sanat':
+                                icon = Icons.palette;
+                                break;
+                              case 'Seyahat':
+                                icon = Icons.flight_takeoff;
+                                break;
+                              case 'Ulaşım':
+                                icon = Icons.directions_bus;
+                                break;
+                              case 'Alışveriş':
+                                icon = Icons.shopping_cart;
+                                break;
+                              case 'Kurum':
+                                icon = Icons.account_balance;
+                                break;
+                              case 'Ekonomi':
+                                icon = Icons.attach_money;
+                                break;
+                              case 'İletişim':
+                                icon = Icons.phone;
+                                break;
+                              case 'Özel Gün':
+                                icon = Icons.cake;
+                                break;
+                              case 'Zaman':
+                                icon = Icons.access_time;
+                                break;
+                              case 'Diğer':
+                                icon = Icons.more_horiz;
+                                break;
+                              case 'Doğa':
+                                icon = Icons.park;
+                                break;
+                              case 'Hayvan':
+                                icon = Icons.pets;
+                                break;
+                              case 'Yaşam':
+                                icon = Icons.self_improvement;
+                                break;
+                              case 'Kırtasiye':
+                                icon = Icons.edit;
+                                break;
+                              case 'Sıfat':
+                                icon = Icons.text_fields;
+                                break;
+                              case 'Renk':
+                                icon = Icons.color_lens;
+                                break;
+                              case 'Hava Durumu':
+                                icon = Icons.wb_sunny;
+                                break;
+                              case 'Mevsim':
+                                icon = Icons.thermostat;
+                                break;
+                              case 'Yer Adı':
+                                icon = Icons.place;
+                                break;
+                              case 'Uzay':
+                                icon = Icons.public;
+                                break;
+                              case 'Spor':
+                                icon = Icons.sports_soccer;
+                                break;
+                              case 'Günlük Yaşam':
+                                icon = Icons.home;
+                                break;
+                              case 'Geometrik Şekil':
+                                icon = Icons.crop_square;
+                                break;
+                              case 'Vücut':
+                                icon = Icons.accessibility_new;
+                                break;
+                              case 'Mutfak':
+                                icon = Icons.kitchen;
+                                break;
+                              case 'Akademik':
+                                icon = Icons.menu_book;
+                                break;
+                              case 'Gün':
+                                icon = Icons.today;
+                                break;
+                              case 'Zarf':
+                                icon = Icons.swap_horiz;
+                                break;
+                              case 'Bağlaç':
+                                icon = Icons.link;
+                                break;
+                              case 'Sağlık':
+                                icon = Icons.local_hospital;
+                                break;
+                              case 'Ev İşi':
+                                icon = Icons.cleaning_services;
+                                break;
+                              case 'Mağaza':
+                                icon = Icons.store;
+                                break;
+                              case 'Malzeme':
+                                icon = Icons.widgets;
+                                break;
+                              case 'ev':
+                                icon = Icons.house;
+                                break;
+                              case 'Hizmet':
+                                icon = Icons.room_service;
+                                break;
+                              case 'IT':
+                                icon = Icons.computer;
+                                break;
+                              case 'Ülke':
+                                icon = Icons.flag;
+                                break;
+                              case 'moda':
+                                icon = Icons.style;
+                                break;
+                              case 'Okul':
+                                icon = Icons.apartment;
+                                break;
+                              case 'Meslek':
+                                icon = Icons.work;
+                                break;
+                              case 'Öğrenci':
+                                icon = Icons.school_outlined;
+                                break;
+                              case 'Eylem':
+                                icon = Icons.directions_run;
+                                break;
+                              default:
+                                icon = Icons.eco;
+                                break;
+                            }
+                            return Icon(icon, size: 48, color: iconColor);
+                          },
+                        ),
+                        const SizedBox(height: 18),
+                        // 한국어 단어
+                        Text(
+                          word[1].toString(),
+                          style: const TextStyle(
+                            fontSize: 36,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2E7D32),
+                            letterSpacing: 2,
                           ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(icon,
-                                size: 20,
-                                color: selected
-                                    ? Colors.white
-                                    : const Color(0xFF388E3C)),
-                            const SizedBox(width: 6),
-                            Text(
-                              cat,
-                              style: TextStyle(
-                                color: selected
-                                    ? Colors.white
-                                    : const Color(0xFF388E3C),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            )
+                        // 발음(로마자) 표시
+                        _pronunciationRow(word),
+                        const SizedBox(height: 12),
+
+                        // 예문 - 예문이 있을 경우 표시
+                        _exampleSentenceRow(word),
+
+                        // 터키어 뜻
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 8, horizontal: 18),
+                          decoration: BoxDecoration(
+                            color: Color(0xFFE8F5E9),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Text(
+                            word[2].toString(),
+                            style: const TextStyle(
+                              fontSize: 22,
+                              color: Color(0xFF388E3C),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        // 발음 듣기 버튼
+                        ElevatedButton.icon(
+                          onPressed: _speak,
+                          icon: const Icon(Icons.volume_up_rounded,
+                              color: Color(0xFF43A047)),
+                          label: const Text('Dinle',
+                              style: TextStyle(fontSize: 18)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFFC8E6C9),
+                            foregroundColor: Color(0xFF2E7D32),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 24, vertical: 12),
+                            elevation: 2,
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        // 다음 버튼
+                        OutlinedButton(
+                          onPressed: _nextWord,
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(
+                                color: Color(0xFF43A047), width: 2),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 32, vertical: 12),
+                          ),
+                          child: const Text(
+                            'Sonraki',
+                            style: TextStyle(
+                                fontSize: 18,
+                                color: Color(0xFF43A047),
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        // 인덱스 표시
+                        Text(
+                          '${(current + 1).toString()} / ${words.length - 1}',
+                          style:
+                              TextStyle(fontSize: 14, color: Color(0xFF81C784)),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // 즐겨찾기 아이콘 (우측 상단)
+                  Positioned(
+                    top: 12,
+                    right: 12,
+                    child: GestureDetector(
+                      onTap: () {
+                        final currentWord = {
+                          'korean': word[1].toString(),
+                          'turkish': word[2].toString(),
+                        };
+                        _toggleFavorite(currentWord);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
                           ],
                         ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-              Card(
-                elevation: 8,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(32),
-                ),
-                color: Colors.white,
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 40, horizontal: 28),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // 카테고리별 대표 아이콘
-                      Builder(
-                        builder: (context) {
-                          // 현재 단어의 카테고리 추출
-                          String? category;
-                          if (word.length > 4) {
-                            category = word[4]?.toString();
-                          }
-                          IconData icon;
-                          Color iconColor = const Color(0xFF43A047);
-                          switch (category) {
-                            case 'Tümü':
-                              icon = Icons.all_inclusive;
-                              break;
-                            case 'Eğitim':
-                              icon = Icons.school;
-                              break;
-                            case 'Nesne':
-                              icon = Icons.category;
-                              break;
-                            case 'Giyim':
-                              icon = Icons.checkroom;
-                              break;
-                            case 'Yiyecek':
-                              icon = Icons.restaurant;
-                              break;
-                            case 'Meyve':
-                              icon = Icons.apple;
-                              break;
-                            case 'Mekan':
-                              icon = Icons.location_city;
-                              break;
-                            case 'Mobilya':
-                              icon = Icons.chair;
-                              break;
-                            case 'Elektronik':
-                              icon = Icons.devices_other;
-                              break;
-                            case 'Aile':
-                              icon = Icons.family_restroom;
-                              break;
-                            case 'İnsan':
-                              icon = Icons.person;
-                              break;
-                            case 'Duygu':
-                              icon = Icons.emoji_emotions;
-                              break;
-                            case 'Sanat':
-                              icon = Icons.palette;
-                              break;
-                            case 'Seyahat':
-                              icon = Icons.flight_takeoff;
-                              break;
-                            case 'Ulaşım':
-                              icon = Icons.directions_bus;
-                              break;
-                            case 'Alışveriş':
-                              icon = Icons.shopping_cart;
-                              break;
-                            case 'Kurum':
-                              icon = Icons.account_balance;
-                              break;
-                            case 'Ekonomi':
-                              icon = Icons.attach_money;
-                              break;
-                            case 'İletişim':
-                              icon = Icons.phone;
-                              break;
-                            case 'Özel Gün':
-                              icon = Icons.cake;
-                              break;
-                            case 'Zaman':
-                              icon = Icons.access_time;
-                              break;
-                            case 'Diğer':
-                              icon = Icons.more_horiz;
-                              break;
-                            case 'Doğa':
-                              icon = Icons.park;
-                              break;
-                            case 'Hayvan':
-                              icon = Icons.pets;
-                              break;
-                            case 'Yaşam':
-                              icon = Icons.self_improvement;
-                              break;
-                            case 'Kırtasiye':
-                              icon = Icons.edit;
-                              break;
-                            case 'Sıfat':
-                              icon = Icons.text_fields;
-                              break;
-                            case 'Renk':
-                              icon = Icons.color_lens;
-                              break;
-                            case 'Hava Durumu':
-                              icon = Icons.wb_sunny;
-                              break;
-                            case 'Mevsim':
-                              icon = Icons.thermostat;
-                              break;
-                            case 'Yer Adı':
-                              icon = Icons.place;
-                              break;
-                            case 'Uzay':
-                              icon = Icons.public;
-                              break;
-                            case 'Spor':
-                              icon = Icons.sports_soccer;
-                              break;
-                            case 'Günlük Yaşam':
-                              icon = Icons.home;
-                              break;
-                            case 'Geometrik Şekil':
-                              icon = Icons.crop_square;
-                              break;
-                            case 'Vücut':
-                              icon = Icons.accessibility_new;
-                              break;
-                            case 'Mutfak':
-                              icon = Icons.kitchen;
-                              break;
-                            case 'Akademik':
-                              icon = Icons.menu_book;
-                              break;
-                            case 'Gün':
-                              icon = Icons.today;
-                              break;
-                            case 'Zarf':
-                              icon = Icons.swap_horiz;
-                              break;
-                            case 'Bağlaç':
-                              icon = Icons.link;
-                              break;
-                            case 'Sağlık':
-                              icon = Icons.local_hospital;
-                              break;
-                            case 'Ev İşi':
-                              icon = Icons.cleaning_services;
-                              break;
-                            case 'Mağaza':
-                              icon = Icons.store;
-                              break;
-                            case 'Malzeme':
-                              icon = Icons.widgets;
-                              break;
-                            case 'ev':
-                              icon = Icons.house;
-                              break;
-                            case 'Hizmet':
-                              icon = Icons.room_service;
-                              break;
-                            case 'IT':
-                              icon = Icons.computer;
-                              break;
-                            case 'Ülke':
-                              icon = Icons.flag;
-                              break;
-                            case 'moda':
-                              icon = Icons.style;
-                              break;
-                            case 'Okul':
-                              icon = Icons.apartment;
-                              break;
-                            case 'Meslek':
-                              icon = Icons.work;
-                              break;
-                            case 'Öğrenci':
-                              icon = Icons.school_outlined;
-                              break;
-                            case 'Eylem':
-                              icon = Icons.directions_run;
-                              break;
-                            default:
-                              icon = Icons.eco;
-                              break;
-                          }
-                          return Icon(icon, size: 48, color: iconColor);
-                        },
-                      ),
-                      const SizedBox(height: 18),
-                      // 한국어 단어
-                      Text(
-                        word[1].toString(),
-                        style: const TextStyle(
-                          fontSize: 36,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2E7D32),
-                          letterSpacing: 2,
-                        ),
-                      ),
-                      // 발음(로마자) 표시
-                      _pronunciationRow(word),
-                      const SizedBox(height: 12),
-
-                      // 예문 - 예문이 있을 경우 표시
-                      _exampleSentenceRow(word),
-
-                      // 터키어 뜻
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8, horizontal: 18),
-                        decoration: BoxDecoration(
-                          color: Color(0xFFE8F5E9),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          word[2].toString(),
-                          style: const TextStyle(
-                            fontSize: 22,
-                            color: Color(0xFF388E3C),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      // 발음 듣기 버튼
-                      ElevatedButton.icon(
-                        onPressed: _speak,
-                        icon: const Icon(Icons.volume_up_rounded,
-                            color: Color(0xFF43A047)),
-                        label:
-                            const Text('Dinle', style: TextStyle(fontSize: 18)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFFC8E6C9),
-                          foregroundColor: Color(0xFF2E7D32),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 12),
-                          elevation: 2,
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      // 즐겨찾기 버튼
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          final word = words[current + 1];
-                          widget.onFavorite({
+                        child: Icon(
+                          _isFavorited({
                             'korean': word[1].toString(),
                             'turkish': word[2].toString(),
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Kelime favorilere eklendi!'),
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.favorite,
-                            color: Color(0xFFd32f2f)),
-                        label: const Text('Favorilere Ekle'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFFF8BBD0),
-                          foregroundColor: Color(0xFFd32f2f),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 12),
-                          elevation: 2,
+                          })
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: _isFavorited({
+                            'korean': word[1].toString(),
+                            'turkish': word[2].toString(),
+                          })
+                              ? Colors.red
+                              : Colors.grey,
+                          size: 24,
                         ),
                       ),
-                      const SizedBox(height: 18),
-                      // 다음 버튼
-                      OutlinedButton(
-                        onPressed: _nextWord,
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(
-                              color: Color(0xFF43A047), width: 2),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 32, vertical: 12),
-                        ),
-                        child: const Text(
-                          'Sonraki',
-                          style: TextStyle(
-                              fontSize: 18,
-                              color: Color(0xFF43A047),
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      // 인덱스 표시
-                      Text(
-                        '${(current + 1).toString()} / ${words.length - 1}',
-                        style:
-                            TextStyle(fontSize: 14, color: Color(0xFF81C784)),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ),
+      )),
     );
   }
 }
