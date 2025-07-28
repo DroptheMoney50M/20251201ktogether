@@ -1,5 +1,34 @@
 # Sürüm Notları (tr-TR)
 
+## Sürüm 1.1.0+9
+
+### 🔧 Kod Yapısı İyileştirmeleri ve Performans Artışı!
+
+#### Büyük Mimari Güncellemesi
+- **Modüler Ders Sistemi**: Tüm ders sayfaları ayrı dosyalara taşındı
+  - `lectures/` klasöründe organize edilmiş ders modülleri
+  - `hangul_lesson_page.dart` - Hangeul öğrenme modülü
+  - `greeting_lesson_page.dart` - Temel selamlaşma modülü  
+  - `numbers_lesson_page.dart` - Sayılar ve zaman modülü
+  - `family_lesson_page.dart` - Aile ve ilişkiler modülü
+- **Geliştirilmiş Kod Organizasyonu**: 
+  - Ana ders dosyası 2500+ satırdan ~290 satıra düşürüldü
+  - Her ders modülü bağımsız ve sürdürülebilir hale getirildi
+  - Temiz import yapısı ve bağımlılık yönetimi
+
+#### Geliştirici Deneyimi İyileştirmeleri
+- **Sürdürülebilir Kod Yapısı**: Gelecekteki ders eklemeleri çok daha kolay
+- **Performans Optimizasyonu**: Daha hızlı uygulama başlatma
+- **Kod Temizliği**: Lint uyarıları ve kullanılmayan kodlar temizlendi
+- **Modüler Mimari**: Her ders bağımsız olarak geliştirilebilir
+
+#### Kullanıcı Deneyimi
+- **Aynı Özellikler**: Tüm mevcut işlevsellik korundu
+- **Daha Stabil Uygulama**: İyileştirilmiş performans
+- **Hızlı Navigasyon**: Dersler arası geçiş optimizasyonu
+
+---
+
 ## Sürüm 1.1.0+8
 
 ### 🎉 Büyük Güncelleme - Hangeul Öğrenme Sistemi!
