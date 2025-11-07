@@ -1,0 +1,6 @@
+# app-ads.txt for ktogether app
+# IAB Tech Lab specification compliant file
+# Generated on November 8, 2025
+
+# Google AdMob
+google.com, pub-3925128058401550, DIRECT, f08c47fec0942fa0

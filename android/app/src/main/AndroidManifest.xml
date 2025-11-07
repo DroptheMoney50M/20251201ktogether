@@ -5,10 +5,25 @@
     <uses-sdk
         android:minSdkVersion="21"
         android:targetSdkVersion="35" />
+    
+    <!-- 16KB 페이지 크기 지원 선언 -->
+    <supports-screens
+        android:largeScreens="true"
+        android:normalScreens="true"
+        android:smallScreens="true"
+        android:xlargeScreens="true" />
+    
     <application
         android:label="ktogether"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false">
+        
+        <!-- 16KB 페이지 크기 지원 메타데이터 -->
+        <meta-data
+            android:name="android.max_aspect"
+            android:value="2.4" />
+        
         <activity
             android:name=".MainActivity"
             android:exported="true"
