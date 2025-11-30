@@ -35,29 +35,35 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         
-        // 16KB 페이지 크기 지원을 위한 설정
+        // 16KB 페이지 크기 지원을 위한 NDK 설정
         ndk {
-            abiFilters 'arm64-v8a', 'armeabi-v7a'
+            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86_64'
         }
-        
-        // 16KB 페이지 크기 지원 플래그
-        manifestPlaceholders += [
-            'android:maxSdkVersion': '35'
-        ]
+    }
+    
+    // 16KB 페이지 크기 지원
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = false
+        }
     }
 
     signingConfigs {
-        release {
-            keyAlias keystoreProperties['keyAlias']
-            keyPassword keystoreProperties['keyPassword']
-            storeFile file(keystoreProperties['storeFile'])
-            storePassword keystoreProperties['storePassword']
+        if (keystorePropertiesFile.exists()) {
+            release {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile file(keystoreProperties['storeFile'])
+                storePassword keystoreProperties['storePassword']
+            }
         }
     }
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            if (keystorePropertiesFile.exists()) {
+                signingConfig signingConfigs.release
+            }
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             // signingConfig = signingConfigs.debug

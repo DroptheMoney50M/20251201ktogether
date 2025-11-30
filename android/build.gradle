@@ -4,7 +4,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.2.1' // 업데이트된 AGP 버전
+        classpath 'com.android.tools.build:gradle:8.3.0' // 업데이트된 AGP 버전
     }
 }
 

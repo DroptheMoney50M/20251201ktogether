@@ -2,11 +2,11 @@
     package="com.example.ktogether">
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
+    
     <uses-sdk
         android:minSdkVersion="21"
         android:targetSdkVersion="35" />
     
-    <!-- 16KB 페이지 크기 지원 선언 -->
     <supports-screens
         android:largeScreens="true"
         android:normalScreens="true"
@@ -20,6 +20,10 @@
         android:allowBackup="false">
         
         <!-- 16KB 페이지 크기 지원 메타데이터 -->
+        <property
+            android:name="android.app.16KB_PAGE_SIZE"
+            android:value="true" />
+        
         <meta-data
             android:name="android.max_aspect"
             android:value="2.4" />
