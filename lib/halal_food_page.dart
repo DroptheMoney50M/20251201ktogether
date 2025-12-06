@@ -149,10 +149,16 @@ class _HalalFoodPageState extends State<HalalFoodPage> {
             ),
             const SizedBox(height: 10),
             _buildCard(
-              title: 'Domuz Eti Yok (돼지고기 빼주세요)',
-              turkish: '돼지고기 빼주세요',
-              icon: Icons.no_food,
+              title: 'Domuz koymayın (돼지고기 넣지 마세요)',
+              turkish: '돼지고기 넣지 마세요',
+              icon: Icons.block,
               color: Colors.red,
+            ),
+            _buildCard(
+              title: 'Çıkartın (빼주세요)',
+              turkish: '빼주세요',
+              icon: Icons.remove_circle_outline,
+              color: Colors.redAccent,
             ),
             _buildCard(
               title: 'Bu Helal Mi? (이게 할랄인가요?)',
